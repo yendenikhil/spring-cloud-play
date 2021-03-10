@@ -1,0 +1,45 @@
+version: '3'
+
+services: 
+  discovery:
+    image: cloud-play-discovery-service 
+    ports: 
+      - 8761:8761
+    environment:
+      - JAVA_OPTS=-DEUREKA_SERVER=http://discovery:8761/eureka -DCONFIG_SERVER=http://config:8888
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:8761/actuator/info"]
+  config:
+    image: cloud-play-config-service 
+    ports: 
+      - 8888:8888
+    depends_on:
+      discovery:
+        condition: service_healthy
+    environment:
+      - JAVA_OPTS=-DEUREKA_SERVER=http://discovery:8761/eureka -DCONFIG_SERVER=http://config:8888
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:8888/actuator/info"]
+  id:
+    image: cloud-play-id-service 
+    deploy:
+      replicas: 2
+    depends_on:
+      discovery:
+        condition: service_healthy
+      config:
+        condition: service_healthy
+    environment:
+      - JAVA_OPTS=-DEUREKA_SERVER=http://discovery:8761/eureka -DCONFIG_SERVER=http://config:8888
+  router:
+    image: cloud-play-router-service 
+    ports: 
+      - 8080:8080
+    depends_on:
+      discovery:
+        condition: service_healthy
+      config:
+        condition: service_healthy
+    environment:
+      - JAVA_OPTS=-DEUREKA_SERVER=http://discovery:8761/eureka -DCONFIG_SERVER=http://config:8888
+

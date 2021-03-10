@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: discovery-service
+server:
+  port: 8761
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  instance:
+    instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+logging.level.com.netflix:
+  eureka: OFF
+  discovery: OFF
