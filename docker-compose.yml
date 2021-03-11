@@ -1,12 +1,18 @@
 version: '3'
 
 services: 
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411
   discovery:
     image: cloud-play-discovery-service 
     ports: 
       - 8761:8761
     environment:
-      - JAVA_OPTS=-DEUREKA_SERVER=http://discovery:8761/eureka -DCONFIG_SERVER=http://config:8888
+      - JAVA_OPTS=
+        -DEUREKA_SERVER=http://discovery:8761/eureka
+        -DCONFIG_SERVER=http://config:8888
     healthcheck:
       test: ["CMD", "curl", "-f", "localhost:8761/actuator/info"]
   config:
@@ -17,7 +23,9 @@ services:
       discovery:
         condition: service_healthy
     environment:
-      - JAVA_OPTS=-DEUREKA_SERVER=http://discovery:8761/eureka -DCONFIG_SERVER=http://config:8888
+      - JAVA_OPTS=
+        -DEUREKA_SERVER=http://discovery:8761/eureka
+        -DCONFIG_SERVER=http://config:8888
     healthcheck:
       test: ["CMD", "curl", "-f", "localhost:8888/actuator/info"]
   id:
@@ -30,7 +38,10 @@ services:
       config:
         condition: service_healthy
     environment:
-      - JAVA_OPTS=-DEUREKA_SERVER=http://discovery:8761/eureka -DCONFIG_SERVER=http://config:8888
+      - JAVA_OPTS=
+        -DEUREKA_SERVER=http://discovery:8761/eureka
+        -DCONFIG_SERVER=http://config:8888
+        -DZIPKIN_SERVER=http://zipkin:9411
   router:
     image: cloud-play-router-service 
     ports: 
@@ -41,5 +52,7 @@ services:
       config:
         condition: service_healthy
     environment:
-      - JAVA_OPTS=-DEUREKA_SERVER=http://discovery:8761/eureka -DCONFIG_SERVER=http://config:8888
-
+      - JAVA_OPTS=
+        -DEUREKA_SERVER=http://discovery:8761/eureka
+        -DCONFIG_SERVER=http://config:8888
+        -DZIPKIN_SERVER=http://zipkin:9411
